@@ -34,7 +34,6 @@ const getDownloadLink = async (pageURL) => {
         console.error(`${pageURL} navigation failed`);
         return;
     }
-    await page.waitForTimeout(10000);
 
     const frame = page.frames().find((frame) => frame.name() === 'player1');
 
@@ -53,6 +52,8 @@ const getDownloadLink = async (pageURL) => {
 };
 
 const downloadVideo = async (videoURL, folderPath, videoName) => {
+    // todo: check if there is existing video and do a head request to compare file size
+
     const response = await fetch(videoURL);
 
     response.body.pipe(fs.createWriteStream(`${folderPath}/${videoName}`));
