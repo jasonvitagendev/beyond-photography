@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@types/node": "^16.9.2",
+    "prettier": "^2.4.1"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.1",
+    "puppeteer": "^10.2.0"
+  }
+}
