@@ -5,12 +5,17 @@ const fetch = require('node-fetch');
 const chalk = require('chalk');
 
 if (!process.argv[2]) {
+    console.log(chalk.red('Please pass in session name'));
+    process.exit(0);
+}
+if (!process.argv[3]) {
     console.log(chalk.red('Please pass in session value'));
     process.exit(0);
 }
 
-// get session value from cli
-const session = process.argv[2];
+// get session name and value from cli
+const sessionName = process.argv[2];
+const sessionValue = process.argv[3];
 
 const browserCache = new Promise(async (resolve) => {
     const browser = await puppeteer.launch({
@@ -25,8 +30,8 @@ const browserCache = new Promise(async (resolve) => {
 const getPage = async (browser) => {
     const page = await browser.newPage();
     await page.setCookie({
-        name: 'ASPSESSIONIDAWTQBARD',
-        value: session,
+        name: sessionName,
+        value: sessionValue,
         domain: 'beyond.photos',
     });
     return page;
@@ -52,9 +57,16 @@ const getDownloadLink = async (pageURL) => {
         await frame.$('#player + script')
     ).evaluate((node) => node.textContent);
 
-    const [, videoURL] = /width":1920.+?url":"(.+?)"/g.exec(scriptContent);
+    try {
+        const [, videoURL] = /width":1920.+?url":"(.+?)"/g.exec(scriptContent);
 
-    return videoURL;
+        return videoURL;
+    } catch {
+        console.log(chalk.cyan('Using 1280'));
+        const [, videoURL] = /width":1280.+?url":"(.+?)"/g.exec(scriptContent);
+
+        return videoURL;
+    }
 };
 
 const downloadVideo = async (videoURL, folderPath, videoName) => {
@@ -85,7 +97,7 @@ const downloadVideo = async (videoURL, folderPath, videoName) => {
         }
     }
 
-    console.log(chalk.green(`Downloading ${videoName}`));
+    console.log(chalk.magenta(`Downloading ${videoName}`));
 
     const response = await fetch(videoURL);
 
@@ -114,11 +126,13 @@ const downloadLesson = async (lessonURL, index) => {
 
     // report if there is no video URL
     if (!videoURL) {
-        console.log(`${lesson} ${chalk.red('has no video URL')}`);
+        console.log(
+            `${index} - ${lesson} ${chalk.red('does not have video URL')}`
+        );
         return;
     }
 
-    const folderPath = `/Users/jason/Downloads/Beyond Photography/${course}`;
+    const folderPath = `/Users/jason/Downloads/Beyond Photography/Premium Courses/${course}`;
 
     // check if there is existing folder
     const folderExists = await new Promise((resolve) => {
@@ -145,7 +159,12 @@ const downloadLesson = async (lessonURL, index) => {
 const downloadCourse = async (courseURL) => {
     const browser = await browserCache;
     const page = await getPage(browser);
-    await page.goto(courseURL);
+    try {
+        await page.goto(courseURL);
+    } catch (err) {
+        console.log(`${pageURL} ${chalk.red('navigation failed')}`);
+        process.exit(1);
+    }
 
     // query for lesson buttons
     const lessonLinks = await page.$$('.btn.btn-md.btn-info');
@@ -167,6 +186,11 @@ const downloadCourse = async (courseURL) => {
 
 (async () => {
     await downloadCourse(
-        'https://beyond.photos/course_lessons.asp?Course=E%2DLearning+Product+Photography&Lesson=#'
+        'https://beyond.photos/course_lessons.asp?Course=Artistic+Photography'
     );
+
+    // await downloadLesson(
+    //     'https://beyond.photos/content_new.asp?Course=E%2DLearning+Photography+For+Online+Business&Lesson=Bonus+Lesson+%2D+Packshot+Photography',
+    //     17
+    // );
 })();
