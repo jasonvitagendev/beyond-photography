@@ -14,8 +14,7 @@ if (!process.argv[3]) {
 }
 
 // get session name and value from cli
-const sessionName = process.argv[2];
-const sessionValue = process.argv[3];
+const [, , sessionName, sessionValue] = process.argv;
 
 const browserCache = new Promise(async (resolve) => {
     const browser = await puppeteer.launch({
@@ -186,7 +185,7 @@ const downloadCourse = async (courseURL) => {
 
 (async () => {
     await downloadCourse(
-        'https://beyond.photos/course_lessons.asp?Course=Artistic+Photography'
+        'https://beyond.photos/course_lessons.asp?Course=Product+Photoshoot'
     );
 
     // await downloadLesson(
