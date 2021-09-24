@@ -4,17 +4,17 @@ const fsPromises = require('fs/promises');
 const fetch = require('node-fetch');
 const chalk = require('chalk');
 
-if (!process.argv[2]) {
+// get session name and value from cli
+const [, , sessionName, sessionValue] = process.argv;
+
+if (!sessionName) {
     console.log(chalk.red('Please pass in session name'));
     process.exit(0);
 }
-if (!process.argv[3]) {
+if (!sessionValue) {
     console.log(chalk.red('Please pass in session value'));
     process.exit(0);
 }
-
-// get session name and value from cli
-const [, , sessionName, sessionValue] = process.argv;
 
 const browserCache = new Promise(async (resolve) => {
     const browser = await puppeteer.launch({
