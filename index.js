@@ -69,6 +69,7 @@ const getDownloadLink = async (pageURL) => {
 };
 
 const downloadVideo = async (videoURL, folderPath, videoName) => {
+    // check if there is existing video and do a head request to compare file size
     const filePath = `${folderPath}/${videoName}`;
 
     const fileExists = await new Promise((resolve) => {
